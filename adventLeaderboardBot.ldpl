@@ -1,0 +1,146 @@
+using package std-random
+using package ltb
+
+include "config.ldpl"
+
+data:
+
+lastTime is number
+lastMsg is text
+
+procedure:
+
+tg bot init with token token
+
+# This sub-procedure is called each time a new text message arrives.
+# Captions in animation, audio, document, photo, video or voice are captured too.
+sub ltb.onMessage
+parameters:
+    messageId is number     # id of the sent message
+    chatId is number        # id of the chat where is was sent
+    userData is text map    # user data from sender
+    messageText is text     # content of the message
+local data:
+    request is text
+    msg is text
+    leaderboard is text list map
+    stars is number
+    member is text
+    name is text
+    startsMsg is text
+    length is number
+    maxLength is number
+    nowTime is number
+    diffTime is number
+    auxText is text
+    auxNumber is number
+procedure:
+    get index of "/leaderboard" from messageText in auxNumber
+    if auxNumber is not equal to 0 then
+        return
+    end if
+    execute "date +%s" and store output in auxText
+    trim auxText in auxText
+    store auxText in nowTime
+    in diffTime solve nowTime - lastTime
+    if diffTime is greater than 900 then
+        store nowTime in lastTime
+
+        # Get the updated leaderboard
+        in request join "curl 'https://adventofcode.com/2019/leaderboard/private/view/" leaderboardId ".json' -H 'cookie: session=" sessionCookie "' --silent"
+        execute request and store output in ltb.json.in.json
+        store "members" in ltb.json.in.value
+        call external ltb.json.getValue
+        store ltb.json.out.text in ltb.json.in.json
+        call external ltb.json.getTextList
+        for each member in ltb.json.out.textlist do
+            store member in ltb.json.in.json
+            store "name" in ltb.json.in.value
+            call external ltb.json.getValue
+            store "stars" in ltb.json.in.value
+            store ltb.json.out.text in name
+            call external ltb.json.getValue
+            store ltb.json.out.text in stars
+            push name to leaderboard:stars
+            get length of name in length
+            if length is greater than maxLength then
+                store length in maxLength
+            end if
+        repeat
+
+        # Generate message displaying the leaderboard
+        in msg join "🎄 *Advent of Code 2019 - Leaderboard* 🎄" crlf
+        for stars from 50 to -1 step -1 do
+            shuffle list leaderboard:stars
+            for each name in leaderboard:stars do
+                # Pad name
+                while 0 is equal to 0 do
+                    get length of name in length
+                    if length is equal to maxLength then
+                        break
+                    end if
+                    in name join name " "
+                repeat
+                if stars is greater than 0 then
+                    in startsMsg join "⭐x" stars
+                else
+                    store "💩" in startsMsg
+                end if
+                in msg join msg "`" name "` - " startsMsg crlf
+            repeat
+        repeat
+        in msg join msg crlf "[Join leaderboard](https://adventofcode.com/2019/leaderboard/private) with code: `" leaderboarCode "`" crlf
+        store msg in lastMsg
+    else
+        # Resend last msg if the last time was less than 15 minutes ago
+        if diffTime is less than 60 then
+            store "second" in msg
+        else
+            in diffTime solve diffTime / 60
+            floor diffTime
+            store "minute" in msg
+        end if
+        if diffTime is not equal to 1 then
+            in msg join msg "s"
+        end if
+        in msg join "_(updated " diffTime " " msg " ago)_" crlf lastMsg
+    end if
+    store "Markdown" in ltb.send.options:"format"
+    tg bot send message msg to chatId
+end sub
+
+#######################
+### NOT IMPLEMENTED ###
+#######################
+
+# This sub-procedure is called each time a user joins a chat.
+sub ltb.onJoin
+parameters:
+    messageId is number     # id of the sent message announcing the user join
+    chatId is number        # id of the chat the user joined
+    userData is text map    # user data from the user who joined the chat
+procedure:
+    # Your code here
+end sub
+
+# This sub-procedure is called each time a user leaves a chat.
+sub ltb.onDeparture
+parameters:
+    messageId is number     # id of the sent message announcing the user departure
+    chatId is number        # id of the chat the user left
+    userData is text map    # user data from the user who left the chat
+procedure:
+    # Your code here
+end sub
+
+# This sub-procedure is called each time a user press a button with callback data.
+sub ltb.onCallbackQuery
+parameters:
+    chatId is number        # id of the chat from the message of the button that was pressed
+    userData is text map    # user data from the user who pressed the button
+    callbackData is text    # callback data from the pressed button
+    answerText is text      # store a text here to display a notification to the user
+    answerAlert is number   # store 1 here to show answerText as an alert instead of a notification at the top of the chat screen
+procedure:
+    # Your code here
+end sub

@@ -1,0 +1,13 @@
+data:
+
+token is text
+leaderboardId is text
+leaderboarCode is text
+sessionCookie is text
+
+procedure:
+
+store "PASTE_YOUR_BOT_TOKEN_HERE" in token
+store "PASTE_THE_LEADERBOR_ID_HERE" in leaderboardId # https://adventofcode.com/2019/leaderboard/private/view/{leaderboardId}
+store "PASTE_THE_LEADERBOR_JOIN_CODE_HERE" in leaderboarCode
+store "PASTE_YOUR_SESSION_COOKIE_HERE" in sessionCookie
