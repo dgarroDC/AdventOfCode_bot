@@ -47,7 +47,7 @@ procedure:
         store nowTime in lastTime
 
         # Get the updated leaderboard
-        in request join "curl 'https://adventofcode.com/2019/leaderboard/private/view/" leaderboardId ".json' -H 'cookie: session=" sessionCookie "' --silent"
+        in request join "curl 'https://adventofcode.com/2020/leaderboard/private/view/" leaderboardId ".json' -H 'cookie: session=" sessionCookie "' --silent"
         execute request and store output in ltb.json.in.json
         store "members" in ltb.json.in.value
         call external ltb.json.getValue
@@ -69,7 +69,7 @@ procedure:
         repeat
 
         # Generate message displaying the leaderboard
-        in msg join "🎄 *Advent of Code 2019 - Leaderboard* 🎄" crlf
+        in msg join "🎄 *Advent of Code 2020 - Leaderboard* 🎄" crlf
         for stars from 50 to -1 step -1 do
             shuffle list leaderboard:stars
             for each name in leaderboard:stars do
