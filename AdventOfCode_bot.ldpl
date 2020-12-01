@@ -89,7 +89,7 @@ procedure:
                 in msg join msg "`" name "` - " startsMsg crlf
             repeat
         repeat
-        in msg join msg crlf "[Join leaderboard](https://adventofcode.com/2019/leaderboard/private) with code: `" leaderboarCode "`" crlf
+        in msg join msg crlf "[Join leaderboard](https://adventofcode.com/2020/leaderboard/private) with code: `" leaderboarCode "`" crlf
         store msg in lastMsg
     else
         # Resend last msg if the last time was less than 15 minutes ago
