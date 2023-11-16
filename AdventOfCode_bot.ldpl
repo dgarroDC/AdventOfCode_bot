@@ -1,7 +1,6 @@
-using package std-random
-using package ltb
-
 include "config.ldpl"
+include "ltb.ldpl"
+include "std-random.ldpl"
 
 data:
 
