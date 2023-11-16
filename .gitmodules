@@ -1,0 +1,6 @@
+[submodule "vendor/ltb"]
+	path = vendor/ltb
+	url = https://github.com/dgarroDC/ltb
+[submodule "vendor/ldpl-std"]
+	path = vendor/ldpl-std
+	url = https://github.com/Lartu/ldpl-std
