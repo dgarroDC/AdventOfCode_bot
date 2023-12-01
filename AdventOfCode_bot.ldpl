@@ -26,7 +26,9 @@ local data:
     stars is number
     member is text
     name is text
-    startsMsg is text
+    namePadded is text
+    starsMsg is text
+    zeroStarsNames is text
     length is number
     maxLength is number
     nowTime is number
@@ -72,22 +74,24 @@ procedure:
         for stars from 50 to -1 step -1 do
             shuffle list leaderboard:stars
             for each name in leaderboard:stars do
+                store name in namePadded
                 # Pad name
                 while 0 is equal to 0 do
-                    get length of name in length
+                    get length of namePadded in length
                     if length is equal to maxLength then
                         break
                     end if
-                    in name join name " "
+                    in namePadded join namePadded " "
                 repeat
                 if stars is greater than 0 then
-                    in startsMsg join "⭐x" stars
+                    in starsMsg join "⭐x" stars
+                    in msg join msg "`" namePadded "` " starsMsg crlf
                 else
-                    store "💩" in startsMsg
+                    in zeroStarsNames join zeroStarsNames name ", "
                 end if
-                in msg join msg "`" name "` - " startsMsg crlf
             repeat
         repeat
+        in msg join msg crlf "No stars yet: " zeroStarsNames "and maybe you?" crlf
         in msg join msg crlf "[Join leaderboard](https://adventofcode.com/" year "/leaderboard/private) with code: `" leaderboardCode "`" crlf
         store msg in lastMsg
     else
