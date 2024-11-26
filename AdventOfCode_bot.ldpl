@@ -35,6 +35,7 @@ local data:
     diffTime is number
     auxText is text
     auxNumber is number
+    anonId is number
 procedure:
     get index of "/leaderboard" from messageText in auxNumber
     if auxNumber is not equal to 0 then
@@ -56,12 +57,22 @@ procedure:
         call external ltb.json.getTextList
         for each member in ltb.json.out.textlist do
             store member in ltb.json.in.json
+
             store "name" in ltb.json.in.value
             call external ltb.json.getValue
-            store "stars" in ltb.json.in.value
             store ltb.json.out.text in name
+
+            store "stars" in ltb.json.in.value
             call external ltb.json.getValue
             store ltb.json.out.text in stars
+
+            if name is equal to "null" then
+                 store "id" in ltb.json.in.value
+                 call external ltb.json.getValue
+                 store ltb.json.out.text in anonId
+                 in name join "anon#" anonId
+            end if
+
             push name to leaderboard:stars
             get length of name in length
             if length is greater than maxLength then
