@@ -1,6 +1,7 @@
 include "config.ldpl"
 include "ltb.ldpl"
 include "std-random.ldpl"
+include "std-math.ldpl"
 
 data:
 
@@ -36,6 +37,7 @@ local data:
     auxText is text
     auxNumber is number
     anonId is number
+    zeroStarsCount is number
 procedure:
     get index of "/leaderboard" from messageText in auxNumber
     if auxNumber is not equal to 0 then
@@ -99,10 +101,14 @@ procedure:
                     in msg join msg "`" namePadded "` " starsMsg crlf
                 else
                     in zeroStarsNames join zeroStarsNames name ", "
+                    incr zeroStarsCount
                 end if
             repeat
         repeat
-        in msg join msg crlf "No stars yet: " zeroStarsNames "and maybe you?" crlf
+
+        # in msg join msg crlf "No stars yet: " zeroStarsNames "and maybe you?" crlf
+        in msg join msg crlf "No stars yet: " zeroStarsCount " people" crlf
+
         in msg join msg crlf "[Join leaderboard](https://adventofcode.com/" year "/leaderboard/private) with code: `" leaderboardCode "`" crlf
         store msg in lastMsg
     else
