@@ -1,6 +1,7 @@
 include "config.ldpl"
 include "ltb.ldpl"
 include "std-random.ldpl"
+include "std-math.ldpl"
 
 data:
 
@@ -36,6 +37,10 @@ local data:
     auxText is text
     auxNumber is number
     anonId is number
+    starPeopleCount is number
+    fewStarsPeopleCount is number
+    maxStars is number
+    fewStarsLimit is number
 procedure:
     get index of "/leaderboard" from messageText in auxNumber
     if auxNumber is not equal to 0 then
@@ -70,7 +75,7 @@ procedure:
                  store "id" in ltb.json.in.value
                  call external ltb.json.getValue
                  store ltb.json.out.text in anonId
-                 in name join "anon#" anonId
+                 in name join "anon" anonId
             end if
 
             push name to leaderboard:stars
@@ -78,32 +83,57 @@ procedure:
             if length is greater than maxLength then
                 store length in maxLength
             end if
+            if stars is greater than maxStars then
+                store stars in maxStars
+            end if
         repeat
 
         # Generate message displaying the leaderboard
+
         in msg join "🎄 *Advent of Code " year " - Leaderboard* 🎄" crlf
-        for stars from 50 to -1 step -1 do
-            shuffle list leaderboard:stars
+
+        store maxStars in fewStarsLimit
+        decr fewStarsLimit
+        decr fewStarsLimit
+        decr fewStarsLimit
+        decr fewStarsLimit
+        decr fewStarsLimit
+        if fewStarsLimit is less than -1 then
+            store 0 in fewStarsLimit
+        end if
+
+        for stars from maxStars to fewStarsLimit step -1 do
+            # shuffle list leaderboard:stars
+            store 0 in starPeopleCount
             for each name in leaderboard:stars do
-                store name in namePadded
-                # Pad name
-                while 0 is equal to 0 do
-                    get length of namePadded in length
-                    if length is equal to maxLength then
-                        break
-                    end if
-                    in namePadded join namePadded " "
-                repeat
-                if stars is greater than 0 then
-                    in starsMsg join "⭐x" stars
-                    in msg join msg "`" namePadded "` " starsMsg crlf
+                incr starPeopleCount
+            repeat
+            if starPeopleCount is greater than 0 then
+                if stars is equal to maxStars then
+                    in msg join msg crlf "🌟x" stars ": "
                 else
-                    in zeroStarsNames join zeroStarsNames name ", "
+                    in msg join msg crlf "⭐x" stars ": "
                 end if
+            
+                for each name in leaderboard:stars do
+                    decr starPeopleCount
+                    in msg join msg name 
+                    if starPeopleCount is greater than 0 then
+                        in msg join msg ", "
+                    end if
+                repeat
+            end if
+        repeat
+
+        for stars from fewStarsLimit to -1 step -1 do
+            for each name in leaderboard:stars do
+                incr fewStarsPeopleCount
             repeat
         repeat
-        in msg join msg crlf "No stars yet: " zeroStarsNames "and maybe you?" crlf
-        in msg join msg crlf "[Join leaderboard](https://adventofcode.com/" year "/leaderboard/private) with code: `" leaderboardCode "`" crlf
+
+        in msg join msg crlf "... and other " fewStarsPeopleCount " busy people. " crlf
+
+        in msg join msg crlf "[Join](https://adventofcode.com/" year "/leaderboard/private) with code: `" leaderboardCode "`" crlf
         store msg in lastMsg
     else
         # Resend last msg if the last time was less than 15 minutes ago
