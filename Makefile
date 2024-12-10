@@ -2,6 +2,9 @@
 run: AdventOfCode_bot-bin
 	./AdventOfCode_bot-bin
 
+msg: AdventOfCode_bot-bin
+	./AdventOfCode_bot-bin msg
+
 AdventOfCode_bot-bin: AdventOfCode_bot.ldpl config.ldpl
 	ldpl AdventOfCode_bot.ldpl
 
