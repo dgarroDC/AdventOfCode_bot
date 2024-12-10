@@ -40,7 +40,9 @@ local data:
     starPeopleCount is number
     fewStarsPeopleCount is number
     maxStars is number
-    fewStarsLimit is number
+
+    peopleInMessage is number
+
 procedure:
     get index of "/leaderboard" from messageText in auxNumber
     if auxNumber is not equal to 0 then
@@ -92,19 +94,15 @@ procedure:
 
         in msg join "🎄 *Advent of Code " year " - Leaderboard* 🎄" crlf
 
-        store maxStars in fewStarsLimit
-        decr fewStarsLimit
-        decr fewStarsLimit
-        decr fewStarsLimit
-        decr fewStarsLimit
-        decr fewStarsLimit
-        if fewStarsLimit is less than -1 then
-            store 0 in fewStarsLimit
-        end if
+        for stars from maxStars to -1 step -1 do
+            if peopleInMessage is greater than 20 then
+                for each name in leaderboard:stars do
+                    incr fewStarsPeopleCount
+                repeat
+                continue
+            end if
 
-        for stars from maxStars to fewStarsLimit step -1 do
             # shuffle list leaderboard:stars
-            store 0 in starPeopleCount
             for each name in leaderboard:stars do
                 incr starPeopleCount
             repeat
@@ -114,21 +112,17 @@ procedure:
                 else
                     in msg join msg crlf "⭐x" stars ": "
                 end if
-            
+
                 for each name in leaderboard:stars do
                     decr starPeopleCount
+                    incr peopleInMessage
+
                     in msg join msg name 
                     if starPeopleCount is greater than 0 then
                         in msg join msg ", "
                     end if
                 repeat
             end if
-        repeat
-
-        for stars from fewStarsLimit to -1 step -1 do
-            for each name in leaderboard:stars do
-                incr fewStarsPeopleCount
-            repeat
         repeat
 
         in msg join msg crlf "... and other " fewStarsPeopleCount " busy people. " crlf
