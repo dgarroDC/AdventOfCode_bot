@@ -5,12 +5,112 @@ include "std-math.ldpl"
 
 data:
 
+argc is number
 lastTime is number
 lastMsg is text
 
 procedure:
 
-tg bot init with token token
+sub generateMessage
+parameters:
+    msg is text
+    downloadLeaderboard is number
+local data:
+    request is text
+    leaderboard is text list map
+    stars is number
+    member is text
+    name is text
+    length is number
+    maxLength is number
+
+    anonId is number
+    starPeopleCount is number
+    fewStarsPeopleCount is number
+    maxStars is number
+
+    peopleInMessage is number
+
+procedure:
+    if downloadLeaderboard is equal to 1 then
+        in request join "curl 'https://adventofcode.com/" year "/leaderboard/private/view/" leaderboardId ".json' -H 'cookie: session=" sessionCookie "' --silent"
+        execute request and store output in ltb.json.in.json
+        write ltb.json.in.json to file "leaderboard.json"
+    else
+        load file "leaderboard.json" in ltb.json.in.json
+    end if
+
+    store "members" in ltb.json.in.value
+    call external ltb.json.getValue
+    store ltb.json.out.text in ltb.json.in.json
+    call external ltb.json.getTextList
+    for each member in ltb.json.out.textlist do
+        store member in ltb.json.in.json
+
+        store "name" in ltb.json.in.value
+        call external ltb.json.getValue
+        store ltb.json.out.text in name
+
+        store "stars" in ltb.json.in.value
+        call external ltb.json.getValue
+        store ltb.json.out.text in stars
+
+        if name is equal to "null" then
+             store "id" in ltb.json.in.value
+             call external ltb.json.getValue
+             store ltb.json.out.text in anonId
+             in name join "anon" anonId
+        end if
+
+        push name to leaderboard:stars
+        get length of name in length
+        if length is greater than maxLength then
+            store length in maxLength
+        end if
+        if stars is greater than maxStars then
+            store stars in maxStars
+        end if
+    repeat
+
+    # Generate message displaying the leaderboard
+
+    in msg join "🎄 *Advent of Code " year " - Leaderboard* 🎄" crlf
+
+    for stars from maxStars to -1 step -1 do
+        if peopleInMessage is greater than 20 then
+            for each name in leaderboard:stars do
+                incr fewStarsPeopleCount
+            repeat
+            continue
+        end if
+
+        # shuffle list leaderboard:stars
+        for each name in leaderboard:stars do
+            incr starPeopleCount
+        repeat
+        if starPeopleCount is greater than 0 then
+            if stars is equal to maxStars then
+                in msg join msg crlf "🌟x" stars ": "
+            else
+                in msg join msg crlf "⭐x" stars ": "
+            end if
+
+            for each name in leaderboard:stars do
+                decr starPeopleCount
+                incr peopleInMessage
+
+                in msg join msg name 
+                if starPeopleCount is greater than 0 then
+                    in msg join msg ", "
+                end if
+            repeat
+        end if
+    repeat
+
+    in msg join msg crlf "... and other " fewStarsPeopleCount " busy people. " crlf
+
+    in msg join msg crlf "[Join](https://adventofcode.com/" year "/leaderboard/private) with code: `" leaderboardCode "`" crlf
+end sub
 
 # This sub-procedure is called each time a new text message arrives.
 # Captions in animation, audio, document, photo, video or voice are captured too.
@@ -21,27 +121,15 @@ parameters:
     userData is text map    # user data from sender
     messageText is text     # content of the message
 local data:
-    request is text
     msg is text
-    leaderboard is text list map
-    stars is number
-    member is text
-    name is text
-    namePadded is text
-    starsMsg is text
-    zeroStarsNames is text
-    length is number
-    maxLength is number
+    auxNumber is number
+    auxText is text
     nowTime is number
     diffTime is number
-    auxText is text
-    auxNumber is number
-    anonId is number
-    starPeopleCount is number
-    fewStarsPeopleCount is number
-    maxStars is number
-    fewStarsLimit is number
 procedure:
+    in msg join "@" chatId " (" userData:"id" "," userData:"first_name" ") " messageText crlf
+    display msg
+
     get index of "/leaderboard" from messageText in auxNumber
     if auxNumber is not equal to 0 then
         return
@@ -54,86 +142,7 @@ procedure:
         store nowTime in lastTime
 
         # Get the updated leaderboard
-        in request join "curl 'https://adventofcode.com/" year "/leaderboard/private/view/" leaderboardId ".json' -H 'cookie: session=" sessionCookie "' --silent"
-        execute request and store output in ltb.json.in.json
-        store "members" in ltb.json.in.value
-        call external ltb.json.getValue
-        store ltb.json.out.text in ltb.json.in.json
-        call external ltb.json.getTextList
-        for each member in ltb.json.out.textlist do
-            store member in ltb.json.in.json
-
-            store "name" in ltb.json.in.value
-            call external ltb.json.getValue
-            store ltb.json.out.text in name
-
-            store "stars" in ltb.json.in.value
-            call external ltb.json.getValue
-            store ltb.json.out.text in stars
-
-            if name is equal to "null" then
-                 store "id" in ltb.json.in.value
-                 call external ltb.json.getValue
-                 store ltb.json.out.text in anonId
-                 in name join "anon" anonId
-            end if
-
-            push name to leaderboard:stars
-            get length of name in length
-            if length is greater than maxLength then
-                store length in maxLength
-            end if
-            if stars is greater than maxStars then
-                store stars in maxStars
-            end if
-        repeat
-
-        # Generate message displaying the leaderboard
-
-        in msg join "🎄 *Advent of Code " year " - Leaderboard* 🎄" crlf
-
-        store maxStars in fewStarsLimit
-        decr fewStarsLimit
-        decr fewStarsLimit
-        decr fewStarsLimit
-        decr fewStarsLimit
-        decr fewStarsLimit
-        if fewStarsLimit is less than -1 then
-            store 0 in fewStarsLimit
-        end if
-
-        for stars from maxStars to fewStarsLimit step -1 do
-            # shuffle list leaderboard:stars
-            store 0 in starPeopleCount
-            for each name in leaderboard:stars do
-                incr starPeopleCount
-            repeat
-            if starPeopleCount is greater than 0 then
-                if stars is equal to maxStars then
-                    in msg join msg crlf "🌟x" stars ": "
-                else
-                    in msg join msg crlf "⭐x" stars ": "
-                end if
-            
-                for each name in leaderboard:stars do
-                    decr starPeopleCount
-                    in msg join msg name 
-                    if starPeopleCount is greater than 0 then
-                        in msg join msg ", "
-                    end if
-                repeat
-            end if
-        repeat
-
-        for stars from fewStarsLimit to -1 step -1 do
-            for each name in leaderboard:stars do
-                incr fewStarsPeopleCount
-            repeat
-        repeat
-
-        in msg join msg crlf "... and other " fewStarsPeopleCount " busy people. " crlf
-
-        in msg join msg crlf "[Join](https://adventofcode.com/" year "/leaderboard/private) with code: `" leaderboardCode "`" crlf
+        call generateMessage with msg 1
         store msg in lastMsg
     else
         # Resend last msg if the last time was less than 15 minutes ago
@@ -188,3 +197,18 @@ parameters:
 procedure:
     # Your code here
 end sub
+
+sub main
+    get length of argv in argc
+    if argc is greater than 0 then
+        if argv:0 is equal to "msg" then
+            call generateMessage with lastMsg 0
+            display lastMsg 
+            exit
+        end if
+    end if
+
+    tg bot init with token token
+end sub
+
+call main
